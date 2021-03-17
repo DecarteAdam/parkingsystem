@@ -15,8 +15,9 @@ public class FareCalculatorService {
         Date inHour = ticket.getInTime();
         Date outHour = ticket.getOutTime();
 
+        long count =-30;
         //TODO: Some tests are failing here. Need to check if this logic is correct
-        long count = ((outHour.getTime() - inHour.getTime())/1000)/60;
+         count += ((outHour.getTime() - inHour.getTime())/1000)/60;
         double duration = count / 60.0;
 
 

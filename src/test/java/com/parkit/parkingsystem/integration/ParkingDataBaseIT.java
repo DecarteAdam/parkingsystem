@@ -10,6 +10,7 @@ import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.ParkingService;
 import com.parkit.parkingsystem.util.InputReaderUtil;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -19,6 +20,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 
 import static org.mockito.Mockito.when;
 
@@ -26,6 +31,7 @@ import static org.mockito.Mockito.when;
 public class ParkingDataBaseIT {
 
     private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
+    private static Ticket expectedTicket = new Ticket();
     private static ParkingSpotDAO parkingSpotDAO;
     private static TicketDAO ticketDAO;
     private static DataBasePrepareService dataBasePrepareService;
@@ -50,73 +56,69 @@ public class ParkingDataBaseIT {
         dataBasePrepareService.clearDataBaseEntries();
     }
 
+    /*@AfterEach
+    private void cleanBaseAterEachTest(){
+        dataBasePrepareService.clearDataBaseEntries();
+    }
+
     @AfterAll
     private static void tearDown(){
 
-    }
+    }*/
 
     @Test
     public void testParkingACar() throws Exception {
-        /*int park = parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR);
-        System.out.println("First" + park);*/
-
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
 
-        /*int park2 = parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR);
-        System.out.println("Second" + park2);*/
+
+        DataBaseTestConfig dataBaseConfig = new DataBaseTestConfig();
+        Connection con = dataBaseConfig.getConnection();
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_UPDATED_SPOT);
+        ResultSet rs = ps.executeQuery();
+
+        rs.next();
+        int res = rs.getInt(1);
 
 
         Ticket actualTicket;
         actualTicket = ticketDAO.getTicket("ABCDEF");
 
 
-
-        int result =  parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR) - 1;
-        /*ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);*/
-
-
-        /*boolean parkingSpotD = parkingSpotDAO.updateParking(parkingSpot);
-        System.out.println(parkingSpot.isAvailable());
-        System.out.println(parkingSpotD);*/
-
-        Ticket expectedTicket = new Ticket();
         expectedTicket.setVehicleRegNumber("ABCDEF");
-
-
 
         Assertions.assertNotNull(actualTicket);
 
         Assertions.assertEquals(expectedTicket.getVehicleRegNumber(), actualTicket.getVehicleRegNumber());
-
-        Assertions.assertEquals(result-1, 0);
+        Assertions.assertEquals(0, res);
 
     }
 
     @Test
     public void testParkingLotExit() throws Exception {
-        testParkingACar();
+        /*testParkingACar();*/
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        parkingService.processIncomingVehicle();
         parkingService.processExitingVehicle();
+        Date expectedDate = new Date();
         //TODO: check that the fare generated and out time are populated correctly in the database
 
         Ticket actualTicket;
         actualTicket = ticketDAO.getTicket("ABCDEF");
 
-        Ticket expectedTicket = new Ticket();
-        expectedTicket.setVehicleRegNumber("ABCDEF");
+        expectedTicket.setPrice(0);
 
-        System.out.println("expected" + expectedTicket.getOutTime().toString());
-        System.out.println("actual" + actualTicket.getOutTime().toString());
 
-        //Assertions.assertNotNull(actualTicket);
+        Connection con = dataBaseTestConfig.getConnection();
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_OUT_TIME);
+        ResultSet rs = ps.executeQuery();
 
-        System.out.println("expected" + expectedTicket.getPrice());
-        System.out.println("actual" + actualTicket.getPrice());
+        rs.next();
+        Date actualDate = rs.getDate(1);
 
-        //Assertions.assertEquals(expectedTicket.getPrice(), actualTicket.getPrice());
-        //Assertions.assertEquals(expectedTicket.getOutTime().getTime(), actualTicket.getOutTime().getTime());
+        Assertions.assertEquals(expectedTicket.getPrice(), actualTicket.getPrice());
+        Assertions.assertEquals(expectedDate, actualDate);
 
     }
 
