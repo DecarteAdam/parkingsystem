@@ -1,7 +1,9 @@
 package com.parkit.parkingsystem;
 
+import com.parkit.parkingsystem.constants.DBConstants;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
+import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
@@ -11,11 +13,17 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class FareCalculatorServiceTest {
 
     private static FareCalculatorService fareCalculatorService;
+    private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
+
     private Ticket ticket;
 
     @BeforeAll
@@ -28,6 +36,7 @@ public class FareCalculatorServiceTest {
         ticket = new Ticket();
     }
 
+
     @Test
     public void calculateFareCar(){
         Date inTime = new Date();
@@ -38,8 +47,8 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals( 0.75, ticket.getPrice());
+        fareCalculatorService.calculateFare(ticket, false);
+        assertEquals( ticket.getPrice(), Fare.CAR_RATE_PER_HOUR);
     }
 
     @Test
@@ -52,8 +61,8 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals(0.5, ticket.getPrice());
+        fareCalculatorService.calculateFare(ticket, false);
+        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_HOUR);
     }
 
     @Test
@@ -66,7 +75,7 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket));
+        assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket, false));
     }
 
     @Test
@@ -79,7 +88,7 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket));
+        assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket, false));
     }
 
     @Test
@@ -92,8 +101,8 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals((0.25 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice() );
+        fareCalculatorService.calculateFare(ticket, false);
+        assertEquals(0.75, ticket.getPrice() );
     }
 
     @Test
@@ -106,8 +115,8 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals(0.375 , ticket.getPrice());
+        fareCalculatorService.calculateFare(ticket, false);
+        assertEquals(1.125 , ticket.getPrice());
     }
 
     @Test
@@ -120,8 +129,8 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals( (23.5 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());
+        fareCalculatorService.calculateFare(ticket, false);
+        assertEquals( 36 , ticket.getPrice());
     }
 
     @Test
@@ -134,10 +143,35 @@ public class FareCalculatorServiceTest {
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        System.out.println("expected " + 0 );
-        System.out.println("actual " + ticket.getPrice());
+        fareCalculatorService.calculateFare(ticket, false);
         assertEquals( 0 , ticket.getPrice());
+    }
+
+    @Test
+    public void calculateFareWithDiscount() throws SQLException, ClassNotFoundException {
+        Date inTime = new Date();
+        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );//60 minutes parking time with 5% discount should give 1.425 parking fare
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+
+
+       /* Connection con = dataBaseTestConfig.getConnection();
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
+        ps.setString(1,"ABCDEF");
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+
+        String existingVehicle = rs.getString(1);*/
+
+        ticket.setVehicleRegNumber("ABCDEF");
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpot);
+        fareCalculatorService.calculateFare(ticket, true);
+
+        assertEquals("ABCDEF", ticket.getVehicleRegNumber());
+
+        assertEquals( 1.4249999999999998 , ticket.getPrice());
     }
 
 }

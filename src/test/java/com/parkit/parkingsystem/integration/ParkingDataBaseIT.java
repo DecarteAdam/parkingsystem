@@ -18,10 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -73,10 +70,12 @@ public class ParkingDataBaseIT {
         //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
 
 
-        DataBaseTestConfig dataBaseConfig = new DataBaseTestConfig();
-        Connection con = dataBaseConfig.getConnection();
+
+        Connection con = dataBaseTestConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_UPDATED_SPOT);
+        ps.setString(1,"0");
         ResultSet rs = ps.executeQuery();
+
 
         rs.next();
         int res = rs.getInt(1);
@@ -89,6 +88,7 @@ public class ParkingDataBaseIT {
         expectedTicket.setVehicleRegNumber("ABCDEF");
 
         Assertions.assertNotNull(actualTicket);
+
 
         Assertions.assertEquals(expectedTicket.getVehicleRegNumber(), actualTicket.getVehicleRegNumber());
         Assertions.assertEquals(0, res);
@@ -120,6 +120,22 @@ public class ParkingDataBaseIT {
         Assertions.assertEquals(expectedTicket.getPrice(), actualTicket.getPrice());
         Assertions.assertEquals(expectedDate, actualDate);
 
+    }
+
+    @Test
+    public void testDiscountForExistingVehicul() throws SQLException, ClassNotFoundException {
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        parkingService.processIncomingVehicle();
+
+        Connection con = dataBaseTestConfig.getConnection();
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
+        ResultSet rs = ps.executeQuery();
+        rs.next();
+
+        String existingVehicul = rs.getString(1);
+        System.out.println("Existing " + existingVehicul);
+
+        Assertions.assertEquals("ABCDEF", existingVehicul);
     }
 
 }
