@@ -1,6 +1,5 @@
 package com.parkit.parkingsystem;
 
-import com.parkit.parkingsystem.constants.DBConstants;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
@@ -11,13 +10,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FareCalculatorServiceTest {
 
@@ -154,15 +151,6 @@ public class FareCalculatorServiceTest {
         Date outTime = new Date();
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
 
-
-       /* Connection con = dataBaseTestConfig.getConnection();
-        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
-        ps.setString(1,"ABCDEF");
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-
-        String existingVehicle = rs.getString(1);*/
-
         ticket.setVehicleRegNumber("ABCDEF");
         ticket.setInTime(inTime);
         ticket.setOutTime(outTime);
@@ -172,6 +160,12 @@ public class FareCalculatorServiceTest {
         assertEquals("ABCDEF", ticket.getVehicleRegNumber());
 
         assertEquals( 1.4249999999999998 , ticket.getPrice());
+    }
+
+    @Test
+    public void processIncomingVehicleTest() {
+
+
     }
 
 }

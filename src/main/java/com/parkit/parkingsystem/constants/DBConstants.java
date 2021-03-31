@@ -11,6 +11,6 @@ public class DBConstants {
 
     // Test
     public static final String GET_UPDATED_SPOT = "select AVAILABLE from parking where AVAILABLE =?";
-    public static final String GET_OUT_TIME = "select OUT_TIME from ticket where VEHICLE_REG_NUMBER = 'ABCDEF'";
+    public static final String GET_OUT_TIME = "select OUT_TIME from ticket where OUT_TIME = ?";
     public static final String GET_EXISTING_VEHICULE = "select VEHICLE_REG_NUMBER from ticket where VEHICLE_REG_NUMBER =?";
 }

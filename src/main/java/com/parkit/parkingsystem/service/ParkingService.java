@@ -42,10 +42,7 @@ public class ParkingService {
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
 
-               boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
-               if (recurringUser){
-                   System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");
-               }
+
 
 
                 Date inTime = new Date();
@@ -58,6 +55,10 @@ public class ParkingService {
                 ticket.setInTime(inTime);
                 ticket.setOutTime(null);
                 ticketDAO.saveTicket(ticket);
+                boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
+                if (recurringUser){
+                    System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");
+                }
                 System.out.println("Generated Ticket and saved in DB");
                 System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
                 System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
@@ -74,12 +75,13 @@ public class ParkingService {
         ps.setString(1,vehicleRegNumber);
         ResultSet rs = ps.executeQuery();
 
-        rs.next();
+        while (rs.next()){
             String existingVehicle = rs.getString(1);
             if (vehicleRegNumber.equals(existingVehicle)){
-               /* System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");*/
+                /* System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");*/
                 return true;
             }
+        }
         return false;
 
 

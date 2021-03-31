@@ -53,23 +53,11 @@ public class ParkingDataBaseIT {
         dataBasePrepareService.clearDataBaseEntries();
     }
 
-    /*@AfterEach
-    private void cleanBaseAterEachTest(){
-        dataBasePrepareService.clearDataBaseEntries();
-    }
-
-    @AfterAll
-    private static void tearDown(){
-
-    }*/
-
     @Test
     public void testParkingACar() throws Exception {
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         //TODO: check that a ticket is actually saved in DB and Parking table is updated with availability
-
-
 
         Connection con = dataBaseTestConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_UPDATED_SPOT);
@@ -100,6 +88,10 @@ public class ParkingDataBaseIT {
         /*testParkingACar();*/
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
+        Thread.sleep(3000);
+        parkingService.processExitingVehicle();
+        parkingService.processIncomingVehicle();
+        Thread.sleep(3000);
         parkingService.processExitingVehicle();
         Date expectedDate = new Date();
         //TODO: check that the fare generated and out time are populated correctly in the database
@@ -112,14 +104,18 @@ public class ParkingDataBaseIT {
 
         Connection con = dataBaseTestConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_OUT_TIME);
+        ps.setDate(1, new java.sql.Date(expectedDate.getTime()));
         ResultSet rs = ps.executeQuery();
 
-        rs.next();
-        Date actualDate = rs.getDate(1);
+        if (rs.first()) {
+            Date actualDate  = rs.getDate(1);
 
-        Assertions.assertEquals(expectedTicket.getPrice(), actualTicket.getPrice());
-        Assertions.assertEquals(expectedDate, actualDate);
+            System.out.println("Expected " + expectedDate);
+            System.out.println("Actual " + actualDate);
 
+            Assertions.assertEquals(expectedTicket.getPrice(), actualTicket.getPrice());
+            Assertions.assertEquals(expectedDate, actualDate);
+        }
     }
 
     @Test
@@ -129,13 +125,16 @@ public class ParkingDataBaseIT {
 
         Connection con = dataBaseTestConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
+        ps.setString(1,"ABCDEF");
+
         ResultSet rs = ps.executeQuery();
+
         rs.next();
 
         String existingVehicul = rs.getString(1);
-        System.out.println("Existing " + existingVehicul);
 
         Assertions.assertEquals("ABCDEF", existingVehicul);
     }
+
 
 }
