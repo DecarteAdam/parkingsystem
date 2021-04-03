@@ -6,16 +6,25 @@ import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
+import com.parkit.parkingsystem.service.ParkingService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(MockitoExtension.class)
 public class FareCalculatorServiceTest {
 
     private static FareCalculatorService fareCalculatorService;
@@ -164,8 +173,20 @@ public class FareCalculatorServiceTest {
 
     @Test
     public void processIncomingVehicleTest() {
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
 
+        ticket.setId(1);
+        ticket.setInTime(new Date());
+        ticket.setOutTime(new Date());
+        ticket.setParkingSpot(parkingSpot);
+        ticket.setPrice(0);
+        ticket.setVehicleRegNumber("ABCDEF");
 
+        /*ParkingService parkingService = new ParkingService(1, parkingSpot, new Ticket());
+        parkingService.processIncomingVehicle();*/
     }
+
+
+
 
 }
