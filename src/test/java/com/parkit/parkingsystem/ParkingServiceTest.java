@@ -9,10 +9,10 @@ import com.parkit.parkingsystem.service.FareCalculatorService;
 import com.parkit.parkingsystem.service.ParkingService;
 import com.parkit.parkingsystem.util.InputReaderUtil;
 import junit.framework.Assert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -21,7 +21,6 @@ import org.mockito.quality.Strictness;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.*;
 
 public class ParkingServiceTest {
 
-    private static ParkingService parkingService;
 
     @Mock
     private static InputReaderUtil inputReaderUtil;
@@ -44,9 +42,14 @@ public class ParkingServiceTest {
 
     private FareCalculatorService fareCalculatorService;
 
+    @InjectMocks
+    ParkingService parkingService;
+
     @BeforeEach
     private void setUpPerTest() {
         try {
+            when(inputReaderUtil.readSelection()).thenReturn(1);
+
             when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
             when(inputReaderUtil.readSelection()).thenReturn(1);
 
@@ -174,6 +177,16 @@ public class ParkingServiceTest {
     }
 
 
+
+    @Test
+    public void getNextParkingNumberIfAvailableTest(){
+        parkingService.processIncomingVehicle();
+
+        ParkingSpot parkingSpot = parkingService.getNextParkingNumberIfAvailable();
+
+
+
+    }
 
 }
 
