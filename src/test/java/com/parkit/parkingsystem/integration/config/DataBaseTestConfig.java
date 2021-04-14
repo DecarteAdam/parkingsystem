@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
+import java.util.TimeZone;
 
 public class DataBaseTestConfig extends DataBaseConfig {
 
@@ -13,8 +14,11 @@ public class DataBaseTestConfig extends DataBaseConfig {
     public Connection getConnection() throws ClassNotFoundException, SQLException {
         logger.info("Create DB connection");
         Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/test","root","rootroot");
+        String url_timezone = "?serverTimezone=" + TimeZone.getDefault().getID();
+
+        String url = "jdbc:mysql://localhost:3306/test";
+
+        return DriverManager.getConnection(url + url_timezone, "root", "rootroot");
     }
 
     public void closeConnection(Connection con){

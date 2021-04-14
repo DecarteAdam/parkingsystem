@@ -97,7 +97,7 @@ public class ParkingDataBaseIT {
 
     @Test
     public void testParkingLotExit() throws Exception {
-        /*testParkingACar();*/
+        //testParkingACar();
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         parkingService.processExitingVehicle();
