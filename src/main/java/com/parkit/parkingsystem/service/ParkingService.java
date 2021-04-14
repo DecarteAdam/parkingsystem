@@ -1,5 +1,7 @@
 package com.parkit.parkingsystem.service;
 
+import com.parkit.parkingsystem.config.DataBaseConfig;
+import com.parkit.parkingsystem.constants.DBConstants;
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
@@ -9,11 +11,16 @@ import com.parkit.parkingsystem.util.InputReaderUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Date;
 
 public class ParkingService {
 
     private static final Logger logger = LogManager.getLogger("ParkingService");
+
+    public DataBaseConfig dataBaseConfig = new DataBaseConfig();
 
     private static FareCalculatorService fareCalculatorService = new FareCalculatorService();
 
@@ -45,6 +52,11 @@ public class ParkingService {
                 ticket.setInTime(inTime);
                 ticket.setOutTime(null);
                 ticketDAO.saveTicket(ticket);
+
+                boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
+                if (recurringUser){
+                    System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");
+                }
                 System.out.println("Generated Ticket and saved in DB");
                 System.out.println("Please park your vehicle in spot number:"+parkingSpot.getId());
                 System.out.println("Recorded in-time for vehicle number:"+vehicleRegNumber+" is:"+inTime);
@@ -52,6 +64,25 @@ public class ParkingService {
         }catch(Exception e){
             logger.error("Unable to process incoming vehicle",e);
         }
+    }
+
+    private boolean checkExistingVehucle(String vehicleRegNumber) throws Exception {
+        Connection con = dataBaseConfig.getConnection();
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
+        //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
+        ps.setString(1,vehicleRegNumber);
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()){
+            String existingVehicle = rs.getString(1);
+            if (vehicleRegNumber.equals(existingVehicle)){
+                /* System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");*/
+                return true;
+            }
+        }
+        return false;
+
+
     }
 
     private String getVehicleRegNumber() throws Exception {
@@ -103,7 +134,8 @@ public class ParkingService {
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket);
+            boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
+            fareCalculatorService.calculateFare(ticket, recurringUser);
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
