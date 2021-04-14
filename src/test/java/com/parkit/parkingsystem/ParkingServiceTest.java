@@ -3,13 +3,11 @@ package com.parkit.parkingsystem;
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
-import com.parkit.parkingsystem.integration.service.DataBasePrepareService;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
+import com.parkit.parkingsystem.service.FareCalculatorService;
 import com.parkit.parkingsystem.service.ParkingService;
 import com.parkit.parkingsystem.util.InputReaderUtil;
-import junit.framework.Assert;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,10 +16,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,6 +32,11 @@ public class ParkingServiceTest {
     @Mock
     private static TicketDAO ticketDAO;
 
+
+    private ParkingSpot parkingSpot;
+
+    private FareCalculatorService fareCalculatorService;
+
     @InjectMocks
     ParkingService parkingService;
 
@@ -45,7 +47,7 @@ public class ParkingServiceTest {
 
             when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
 
-            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+            parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
             Ticket ticket = new Ticket();
             ticket.setInTime(new Date(System.currentTimeMillis() - (60*60*1000)));
             ticket.setParkingSpot(parkingSpot);
@@ -67,6 +69,37 @@ public class ParkingServiceTest {
         parkingService.processExitingVehicle();
         verify(parkingSpotDAO, Mockito.times(1)).updateParking(any(ParkingSpot.class));
     }
+
+
+    @Test
+    public void checkIfSaveTicketThrowsExceptionWhenNull() throws NullPointerException{
+        parkingService.processIncomingVehicle();
+        ticketDAO.saveTicket(null);
+    }
+
+    @Test
+    public void getNextParkingNumberIfAvailable() {
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
+        parkingService.processIncomingVehicle();
+        assertEquals(parkingSpot, parkingService.getNextParkingNumberIfAvailable());
+    }
+
+    @Test
+    public void getNextParkingNumberIfAvailableThrowsException() {
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
+        parkingService.processIncomingVehicle();
+        parkingService.getNextParkingNumberIfAvailable().setParkingType(null);
+    }
+
+    @Test
+    public void parkingSpotIfElse() {
+        parkingService.processIncomingVehicle();
+        parkingService.getNextParkingNumberIfAvailable();
+        when(parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)).thenReturn(1);
+
+        assertEquals(1, parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR));
+    }
+
 
 
     @Test

@@ -66,6 +66,7 @@ public class ParkingService {
         }
     }
 
+
     private boolean checkExistingVehucle(String vehicleRegNumber) throws Exception {
         Connection con = dataBaseConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
