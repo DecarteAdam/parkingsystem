@@ -53,7 +53,7 @@ public class ParkingService {
                 ticket.setOutTime(null);
                 ticketDAO.saveTicket(ticket);
 
-                boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
+                boolean recurringUser = checkExistingVehicle(vehicleRegNumber);
                 if (recurringUser){
                     System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");
                 }
@@ -67,7 +67,7 @@ public class ParkingService {
     }
 
 
-    private boolean checkExistingVehucle(String vehicleRegNumber) throws Exception {
+    private boolean checkExistingVehicle(String vehicleRegNumber) throws Exception {
         Connection con = dataBaseConfig.getConnection();
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
         //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
@@ -135,7 +135,7 @@ public class ParkingService {
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            boolean recurringUser = checkExistingVehucle(vehicleRegNumber);
+            boolean recurringUser = checkExistingVehicle(vehicleRegNumber);
             fareCalculatorService.calculateFare(ticket, recurringUser);
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
