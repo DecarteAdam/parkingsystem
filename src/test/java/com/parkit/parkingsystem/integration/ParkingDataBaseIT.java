@@ -145,7 +145,7 @@ public class ParkingDataBaseIT {
     }
 
     @Test
-    public void check_that_the_availability_is_updated_in_DB() throws Exception {
+    public void check_that_the_availability_is_updated_in_DB() {
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         parkingService.processExitingVehicle();
