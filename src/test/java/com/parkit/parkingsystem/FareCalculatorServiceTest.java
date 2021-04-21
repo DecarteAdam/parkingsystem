@@ -6,19 +6,12 @@ import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
-import com.parkit.parkingsystem.service.ParkingService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,7 +65,7 @@ public class FareCalculatorServiceTest {
     }
 
     @Test
-    public void calculateFareUnkownType(){
+    public void calculateFareUnknownType(){
         Date inTime = new Date();
         inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
         Date outTime = new Date();
@@ -154,7 +147,7 @@ public class FareCalculatorServiceTest {
     }
 
     @Test
-    public void calculateFareWithDiscount() throws SQLException, ClassNotFoundException {
+    public void calculateFareWithDiscount() {
         Date inTime = new Date();
         inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );//60 minutes parking time with 5% discount should give 1.425 parking fare
         Date outTime = new Date();
@@ -172,19 +165,23 @@ public class FareCalculatorServiceTest {
     }
 
     @Test
-    public void processIncomingVehicleTest() {
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+    public void calculate_fare_for_bike_with_discount() {
+        Date inTime = new Date();
+        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );//60 minutes parking time with 5% discount should give 1.425 parking fare
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);
 
-        ticket.setId(1);
-        ticket.setInTime(new Date());
-        ticket.setOutTime(new Date());
-        ticket.setParkingSpot(parkingSpot);
-        ticket.setPrice(0);
         ticket.setVehicleRegNumber("ABCDEF");
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpot);
+        fareCalculatorService.calculateFare(ticket, true);
 
-        /*ParkingService parkingService = new ParkingService(1, parkingSpot, new Ticket());
-        parkingService.processIncomingVehicle();*/
+        assertEquals("ABCDEF", ticket.getVehicleRegNumber());
+
+        assertEquals( 0.95 , ticket.getPrice());
     }
+
 
 
 

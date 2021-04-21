@@ -1,10 +1,12 @@
 package com.parkit.parkingsystem.integration;
 
 import com.parkit.parkingsystem.constants.DBConstants;
+import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.dao.ParkingSpotDAO;
 import com.parkit.parkingsystem.dao.TicketDAO;
 import com.parkit.parkingsystem.integration.config.DataBaseTestConfig;
 import com.parkit.parkingsystem.integration.service.DataBasePrepareService;
+import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.ParkingService;
 import com.parkit.parkingsystem.util.InputReaderUtil;
@@ -16,10 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 
 import static org.mockito.Mockito.when;
@@ -63,8 +62,6 @@ public class ParkingDataBaseIT {
         PreparedStatement ps = con.prepareStatement(DBConstants.GET_UPDATED_SPOT);
         ps.setString(1,"0");
         ResultSet rs = ps.executeQuery();
-
-
         rs.next();
         int res = rs.getInt(1);
 
@@ -76,8 +73,6 @@ public class ParkingDataBaseIT {
         expectedTicket.setVehicleRegNumber("ABCDEF");
 
         Assertions.assertNotNull(actualTicket);
-
-
         Assertions.assertEquals(expectedTicket.getVehicleRegNumber(), actualTicket.getVehicleRegNumber());
         Assertions.assertEquals(0, res);
 
@@ -85,7 +80,6 @@ public class ParkingDataBaseIT {
 
     @Test
     public void testParkingLotExit() throws Exception {
-        //testParkingACar();
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
         Thread.sleep(3000);
@@ -119,21 +113,49 @@ public class ParkingDataBaseIT {
     }
 
     @Test
-    public void testDiscountForExistingVehicul() throws SQLException, ClassNotFoundException {
+    public void testDiscountForExistingVehicle() throws SQLException, ClassNotFoundException {
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         parkingService.processIncomingVehicle();
 
         Connection con = dataBaseTestConfig.getConnection();
-        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICLE);
         ps.setString(1,"ABCDEF");
 
         ResultSet rs = ps.executeQuery();
 
         rs.next();
 
-        String existingVehicul = rs.getString(1);
+        int existingVehicul = rs.getInt(1);
 
-        Assertions.assertEquals("ABCDEF", existingVehicul);
+        Assertions.assertEquals(1, existingVehicul);
+    }
+
+    @Test
+    public void check_that_the_next_slot_is_updated_in_DB() throws Exception {
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        parkingService.processIncomingVehicle();
+        Thread.sleep(3000);
+        parkingService.processExitingVehicle();
+
+        int actual = parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR);
+
+
+        Assertions.assertNotNull(expectedTicket);
+        Assertions.assertEquals(1, actual);
+    }
+
+    @Test
+    public void check_that_the_availability_is_updated_in_DB() throws Exception {
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        parkingService.processIncomingVehicle();
+        parkingService.processExitingVehicle();
+
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
+
+        boolean actual = parkingSpotDAO.updateParking(parkingSpot);
+
+        Assertions.assertNotNull(expectedTicket);
+        Assertions.assertTrue(actual);
     }
 
 

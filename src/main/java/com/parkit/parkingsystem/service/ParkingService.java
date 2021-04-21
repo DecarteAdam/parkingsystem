@@ -44,8 +44,6 @@ public class ParkingService {
 
                 Date inTime = new Date();
                 Ticket ticket = new Ticket();
-                //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
-                //ticket.setId(ticketID);
                 ticket.setParkingSpot(parkingSpot);
                 ticket.setVehicleRegNumber(vehicleRegNumber);
                 ticket.setPrice(0);
@@ -69,15 +67,13 @@ public class ParkingService {
 
     private boolean checkExistingVehicle(String vehicleRegNumber) throws Exception {
         Connection con = dataBaseConfig.getConnection();
-        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
-        //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
+        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICLE);
         ps.setString(1,vehicleRegNumber);
         ResultSet rs = ps.executeQuery();
 
         while (rs.next()){
-            String existingVehicle = rs.getString(1);
-            if (vehicleRegNumber.equals(existingVehicle)){
-                /* System.out.println("Welcome back! As a recurring user of our parking lot, you'll benefit from a 5% discount.");*/
+            int existingVehicle = rs.getInt(1);
+            if (existingVehicle > 1){
                 return true;
             }
         }

@@ -19,19 +19,11 @@ public class FareCalculatorService {
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         }
 
-        /*boolean recurringUser;*/
 
         Date inHour = ticket.getInTime();
         Date outHour = ticket.getOutTime();
 
-        //TODO: Some tests are failing here. Need to check if this logic is correct
          long timeDifferenceInMinutes = ((outHour.getTime() - inHour.getTime())/1000)/60;
-       // double duration = count / 60.0;
-
-        /*
-         If user parking time is less the 30 minutes, the parking cost is free.
-          else he pay the regular price
-         */
 
         if (timeDifferenceInMinutes <= freeTime){
             ticket.setPrice(0);
@@ -59,12 +51,4 @@ public class FareCalculatorService {
 
 
     }
-
-    /*public void calculateDiscount() throws SQLException, ClassNotFoundException {
-        Connection con = dataBaseConfig.getConnection();
-        PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICULE);
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        if (rs.)
-    }*/
 }
