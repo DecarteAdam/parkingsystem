@@ -1,31 +1,54 @@
 package com.parkit.parkingsystem.service;
 
+import com.parkit.parkingsystem.config.DataBaseConfig;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
-public class FareCalculatorService {
+import java.text.DecimalFormat;
+import java.util.Date;
 
-    public void calculateFare(Ticket ticket){
+public class FareCalculatorService {
+    private static DecimalFormat df = new DecimalFormat("0.00");
+    public DataBaseConfig dataBaseConfig = new DataBaseConfig();
+    int freeTime =  30;
+    double discount = 0.95;
+
+
+    public void calculateFare(Ticket ticket, boolean recurringUser) {
         if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         }
 
-        int inHour = ticket.getInTime().getHours();
-        int outHour = ticket.getOutTime().getHours();
 
-        //TODO: Some tests are failing here. Need to check if this logic is correct
-        int duration = outHour - inHour;
+        Date inHour = ticket.getInTime();
+        Date outHour = ticket.getOutTime();
 
-        switch (ticket.getParkingSpot().getParkingType()){
-            case CAR: {
-                ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
-                break;
+         long timeDifferenceInMinutes = ((outHour.getTime() - inHour.getTime())/1000)/60;
+
+        if (timeDifferenceInMinutes <= freeTime){
+            ticket.setPrice(0);
+        }else{
+            switch (ticket.getParkingSpot().getParkingType()){
+                case CAR: {
+                    if (recurringUser){
+                        ticket.setPrice(((timeDifferenceInMinutes * Fare.CAR_RATE_PER_HOUR) / 60) * discount);
+                    }else {
+                        ticket.setPrice((timeDifferenceInMinutes * Fare.CAR_RATE_PER_HOUR) / 60);
+                    }
+                    break;
+                }
+                case BIKE: {
+                    if (recurringUser){
+                        ticket.setPrice(((timeDifferenceInMinutes * Fare.BIKE_RATE_PER_HOUR) / 60) * discount);
+                    }else{
+                        ticket.setPrice((timeDifferenceInMinutes * Fare.BIKE_RATE_PER_HOUR) / 60);
+                    }
+                    break;
+                }
+                default: throw new IllegalArgumentException("Unknown Parking Type");
             }
-            case BIKE: {
-                ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
-                break;
-            }
-            default: throw new IllegalArgumentException("Unkown Parking Type");
         }
+
+
     }
 }
