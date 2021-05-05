@@ -1,15 +1,11 @@
 package com.parkit.parkingsystem.service;
 
-import com.parkit.parkingsystem.config.DataBaseConfig;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
-import java.text.DecimalFormat;
 import java.util.Date;
 
 public class FareCalculatorService {
-    private static DecimalFormat df = new DecimalFormat("0.00");
-    public DataBaseConfig dataBaseConfig = new DataBaseConfig();
     int freeTime =  30;
     double discount = 0.95;
 
