@@ -34,6 +34,9 @@ public class ParkingService {
         this.ticketDAO = ticketDAO;
     }
 
+    /**
+     * Process Incoming vehicle, save properties in DB and check recurring vehicle
+     */
     public void processIncomingVehicle() {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
@@ -65,6 +68,10 @@ public class ParkingService {
     }
 
 
+    /**
+     * This methode chek if the vehicle exists in Data Base
+     * @param vehicleRegNumber The vehicle registration number
+     */
     private boolean checkExistingVehicle(String vehicleRegNumber) throws Exception {
         Connection con = dataBaseConfig.getConnection();
         try {
@@ -88,16 +95,21 @@ public class ParkingService {
 
     }
 
+
     private String getVehicleRegNumber() throws Exception {
         System.out.println("Please type the vehicle registration number and press enter key");
         return inputReaderUtil.readVehicleRegistrationNumber();
     }
 
+    /**
+     * Checking availability in Parking slots
+     * @return ParkingSpot
+     */
     public ParkingSpot getNextParkingNumberIfAvailable(){
         int parkingNumber=0;
         ParkingSpot parkingSpot = null;
         try{
-            ParkingType parkingType = getVehichleType();
+            ParkingType parkingType = getVehicleType();
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
             if(parkingNumber > 0){
                 parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
@@ -112,7 +124,11 @@ public class ParkingService {
         return parkingSpot;
     }
 
-    private ParkingType getVehichleType(){
+    /**
+     * Read user selection to chose the vehicle type
+     * @return ParkingType
+     */
+    private ParkingType getVehicleType(){
         System.out.println("Please select vehicle type from menu");
         System.out.println("1 CAR");
         System.out.println("2 BIKE");
@@ -131,6 +147,9 @@ public class ParkingService {
         }
     }
 
+    /**
+     * Process existing vehicle and calculate payment
+     */
     public void processExitingVehicle() {
         try{
             String vehicleRegNumber = getVehicleRegNumber();

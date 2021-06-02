@@ -10,11 +10,13 @@ public class FareCalculatorService {
     double discount = 0.95;
 
 
+    /**
+     * Calculate payment fare according to the parking time and vehicle type
+     */
     public void calculateFare(Ticket ticket, boolean recurringUser) {
         if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
         }
-
 
         Date inHour = ticket.getInTime();
         Date outHour = ticket.getOutTime();
