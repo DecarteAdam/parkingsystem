@@ -67,7 +67,7 @@ public class ParkingServiceTest {
 
 
     @Test
-    public void return_next_parking_number_if_available(){
+    public void return_next_parking_number_if_available() {
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)).thenReturn(1);
 
@@ -75,7 +75,7 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void return_next_parking_number_if_available_for_Bike(){
+    public void return_next_parking_number_if_available_for_Bike() {
         when(inputReaderUtil.readSelection()).thenReturn(2);
         when(parkingSpotDAO.getNextAvailableSlot(ParkingType.BIKE)).thenReturn(1);
 
@@ -83,7 +83,7 @@ public class ParkingServiceTest {
     }
 
     @Test
-    public void checkUpdateParking() throws NullPointerException{
+    public void checkUpdateParking() throws NullPointerException {
 
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
         parkingService.processIncomingVehicle();
