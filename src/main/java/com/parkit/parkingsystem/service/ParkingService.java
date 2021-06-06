@@ -73,11 +73,14 @@ public class ParkingService {
      * @param vehicleRegNumber The vehicle registration number
      */
     private boolean checkExistingVehicle(String vehicleRegNumber) throws Exception {
-        Connection con = dataBaseConfig.getConnection();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            PreparedStatement ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICLE);
+            con = dataBaseConfig.getConnection();
+            ps = con.prepareStatement(DBConstants.GET_EXISTING_VEHICLE);
             ps.setString(1,vehicleRegNumber);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
             while (rs.next()){
                 int existingVehicle = rs.getInt(1);
                 if (existingVehicle > 1){
@@ -89,6 +92,8 @@ public class ParkingService {
             logger.error("Error checking existing vehicle",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
+            dataBaseConfig.closePreparedStatement(ps);
+            dataBaseConfig.closeResultSet(rs);
         }
         return false;
 
